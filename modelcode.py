@@ -28,16 +28,28 @@ scenario3 = np.array([
     [1,4,5,4,4,1,1]
 ])
 
-weights = np.array([0.04, 0.29, 0.22, 0.12, 0.02, 0.22, 0.08])
+weights = np.array([0.04, 0.29, 0.22, 0.12, 0.22, 0.02, 0.09])
 
 def topsis(matrix, weights):
     # Normalize matrix
     norm = matrix / np.sqrt((matrix**2).sum(axis=0))
     # Apply weights
     weighted = norm * weights
-    # Ideal best and worst
-    ideal_best = weighted.max(axis=0)
-    ideal_worst = weighted.min(axis=0)
+    # Define criteria types: True = benefit, False = cost
+    benefit = np.array([False, True, True, True, True, False, True])
+
+    # Compute ideal best and worst correctly
+    ideal_best = np.zeros(weighted.shape[1])
+    ideal_worst = np.zeros(weighted.shape[1])
+
+    for j in range(weighted.shape[1]):
+        if benefit[j]:  # benefit criterion → maximize
+            ideal_best[j] = weighted[:, j].max()
+            ideal_worst[j] = weighted[:, j].min()
+        else:  # cost criterion → minimize
+            ideal_best[j] = weighted[:, j].min()
+            ideal_worst[j] = weighted[:, j].max()
+    
     # Distances
     d_pos = np.sqrt(((weighted - ideal_best)**2).sum(axis=1))
     d_neg = np.sqrt(((weighted - ideal_worst)**2).sum(axis=1))
