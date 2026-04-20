@@ -47,19 +47,22 @@ with col1:
     st.info(scenario_descriptions[scenario_choice])
 
 with col2:
+    default_weights = np.array([0.04, 0.29, 0.22, 0.12, 0.22, 0.02, 0.09])
+
     st.write("### 🎯 Define priorities")
     st.caption("0 = not important | 1 = very important")
 
-    cost = st.slider("Cost Efficiency", 0.0, 1.0, 0.3)
-    risk = st.slider("Risk Reduction", 0.0, 1.0, 0.6)
-    flex = st.slider("Flexibility", 0.0, 1.0, 0.5)
-    resp = st.slider("Responsiveness", 0.0, 1.0, 0.4)
-    align = st.slider("Strategic Alignment", 0.0, 1.0, 0.4)
-    complexity = st.slider("Implementation Complexity", 0.0, 1.0, 0.2)
-    esg = st.slider("ESG", 0.0, 1.0, 0.3)
+    cost = st.slider("Cost Efficiency", 0.0, 1.0, float(default_weights[0]))
+    risk = st.slider("Risk Reduction", 0.0, 1.0, float(default_weights[1]))
+    flex = st.slider("Flexibility", 0.0, 1.0, float(default_weights[2]))
+    resp = st.slider("Responsiveness", 0.0, 1.0, float(default_weights[3]))
+    align = st.slider("Strategic Alignment", 0.0, 1.0, float(default_weights[4]))
+    complexity = st.slider("Implementation Complexity", 0.0, 1.0, float(default_weights[5]))
+    esg = st.slider("ESG", 0.0, 1.0, float(default_weights[6]))
 
 weights = np.array([cost, risk, flex, resp, align, complexity, esg])
 weights = weights / weights.sum()
+
 
 criteria_names = [
     "Cost Efficiency","Risk Reduction","Flexibility",
@@ -76,7 +79,7 @@ weighted = norm * weights
 contrib = weighted[best_idx]
 
 gap = ci[ranking[0]] - ci[ranking[1]]
-confidence_percent = int((gap / ci[ranking[0]]) * 100)
+confidence_percent = round((gap / ci[ranking[0]]) * 100, 1)
 
 np.random.seed(42)
 
@@ -114,6 +117,8 @@ colA.metric("Decision Strength", f"{confidence_percent}%")
 colB.metric("Robustness", f"{int(stability*100)}%")
 colC.metric("Top Rank Score", f"{round(ci_percent[best_idx],1)}%")
 
+if confidence_percent < 5:
+    st.caption("Low strength means top strategies have very similar performance.")
 st.markdown("---")
 st.subheader("🏆 Strategy Ranking")
 
@@ -164,7 +169,9 @@ the model favors strategies strong in **{criteria_names[top[0]]}**,
 which explains why **{best_strategy}** is selected.
 """)
 
-if important[0] == top[0] or important[1] == top[0]:
+if confidence_percent < 5:
+    st.warning("Top strategies are very close → decision is weak.")
+elif important[0] == top[0] or important[1] == top[0]:
     st.success("Strong alignment with your priorities.")
 elif important[0] in worst:
     st.warning("Top priority not fully satisfied.")
