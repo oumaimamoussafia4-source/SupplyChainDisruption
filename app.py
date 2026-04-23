@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import io
-
+import plotly.io as pio
+pio.kaleido.scope.default_format = "png"
 from modelcode import run_topsis, scenario0, scenario1, scenario2, scenario3, strategies
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
@@ -196,7 +197,8 @@ st.plotly_chart(fig_compare, use_container_width=True)
 def safe_img(fig):
     try:
         return fig.to_image(format="png")
-    except:
+    except Exception as e:
+        st.error(f"Image export failed: {e}")
         return None
 
 img_rank = safe_img(fig_rank)
