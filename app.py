@@ -212,35 +212,77 @@ def generate_pdf():
     styles = getSampleStyleSheet()
     elements = []
 
+    # ===== TITLE =====
     elements.append(Paragraph("Supply Chain Decision Report", styles["Title"]))
     elements.append(Spacer(1, 12))
 
+    # ===== SCENARIO =====
     elements.append(Paragraph("Scenario", styles["Heading2"]))
     elements.append(Paragraph(scenario_descriptions[scenario_choice], styles["Normal"]))
     elements.append(Spacer(1, 12))
 
+    # ===== BEST STRATEGY =====
     elements.append(Paragraph(f"Best Strategy: {best_strategy}", styles["Normal"]))
     elements.append(Spacer(1, 12))
 
-    # 🔥 Generate images HERE (not outside)
-    img_rank = safe_img(fig_rank)
-    img_sens = safe_img(fig_sens)
-    img_compare = safe_img(fig_compare)
+    # ===== RANKING TABLE =====
+    elements.append(Paragraph("Strategy Ranking", styles["Heading2"]))
+    
+    ranking_table_data = [["Strategy", "Score (%)"]] + [
+        [strategies[i], f"{round(ci_percent[i],1)}"]
+        for i in ranking
+    ]
 
-    if img_rank:
-        elements.append(Image(io.BytesIO(img_rank), width=400, height=250))
-        elements.append(Spacer(1, 12))
+    ranking_table = Table(ranking_table_data)
+    ranking_table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), colors.grey),
+        ("TEXTCOLOR",(0,0),(-1,0),colors.white),
+        ("ALIGN",(0,0),(-1,-1),"CENTER"),
+        ("GRID", (0,0), (-1,-1), 1, colors.black)
+    ]))
 
-    if img_sens:
-        elements.append(Image(io.BytesIO(img_sens), width=400, height=250))
-        elements.append(Spacer(1, 12))
+    elements.append(ranking_table)
+    elements.append(Spacer(1, 12))
 
-    if img_compare:
-        elements.append(Image(io.BytesIO(img_compare), width=400, height=250))
+    # ===== SCENARIO COMPARISON TABLE =====
+    elements.append(Paragraph("Scenario Comparison", styles["Heading2"]))
 
+    comparison_table_data = [["Scenario", "Best Strategy", "Score (%)"]]
+    for name, mat in zip(
+        ["Stable", "Supplier", "Demand", "Multi-Risk"],
+        [scenario0, scenario1, scenario2, scenario3]
+    ):
+        ci_temp, rank_temp = run_topsis(mat, weights)
+        comparison_table_data.append([
+            name,
+            strategies[rank_temp[0]],
+            f"{round(ci_temp[rank_temp[0]] * 100,1)}"
+        ])
+
+    comparison_table = Table(comparison_table_data)
+    comparison_table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), colors.grey),
+        ("TEXTCOLOR",(0,0),(-1,0),colors.white),
+        ("ALIGN",(0,0),(-1,-1),"CENTER"),
+        ("GRID", (0,0), (-1,-1), 1, colors.black)
+    ]))
+
+    elements.append(comparison_table)
+    elements.append(Spacer(1, 12))
+
+    # ===== NOTE =====
+    elements.append(Paragraph(
+        "Note: Interactive visualizations (ranking, sensitivity analysis, and scenario comparison) "
+        "are available in the Streamlit dashboard.",
+        styles["Italic"]
+    ))
+
+    # ===== BUILD PDF =====
     doc.build(elements)
     buffer.seek(0)
     return buffer
+
+
 # ================= DOWNLOAD =================
 st.markdown("---")
 
