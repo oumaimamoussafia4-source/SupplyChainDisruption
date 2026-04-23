@@ -222,17 +222,25 @@ def generate_pdf():
     elements.append(Paragraph(f"Best Strategy: {best_strategy}", styles["Normal"]))
     elements.append(Spacer(1, 12))
 
+    # 🔥 Generate images HERE (not outside)
+    img_rank = safe_img(fig_rank)
+    img_sens = safe_img(fig_sens)
+    img_compare = safe_img(fig_compare)
+
     if img_rank:
         elements.append(Image(io.BytesIO(img_rank), width=400, height=250))
+        elements.append(Spacer(1, 12))
+
     if img_sens:
         elements.append(Image(io.BytesIO(img_sens), width=400, height=250))
+        elements.append(Spacer(1, 12))
+
     if img_compare:
         elements.append(Image(io.BytesIO(img_compare), width=400, height=250))
 
     doc.build(elements)
     buffer.seek(0)
     return buffer
-
 # ================= DOWNLOAD =================
 st.markdown("---")
 
