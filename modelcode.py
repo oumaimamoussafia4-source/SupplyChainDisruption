@@ -71,25 +71,3 @@ def run_topsis(matrix, weights):
     ranking = np.argsort(-ci)
     return ci, ranking
 
-# ================= RUN TEST =================
-
-scenarios = {
-    "Scenario 0 (Stable)": scenario0,
-    "Scenario 1 (Supplier)": scenario1,
-    "Scenario 2 (Demand)": scenario2,
-    "Scenario 3 (Multi-risk)": scenario3
-}
-
-for name, matrix in scenarios.items():
-    print("\n" + "="*50)
-    print(name)
-
-    ci, ranking = run_topsis(matrix, weights)
-
-    print("\nCloseness Coefficients:")
-    for i, score in enumerate(ci):
-        print(f"{strategies[i]}: {round(score, 4)}")
-
-    print("\nRanking:")
-    for rank, idx in enumerate(ranking, 1):
-        print(f"{rank}. {strategies[idx]} ({round(ci[idx],4)})")
