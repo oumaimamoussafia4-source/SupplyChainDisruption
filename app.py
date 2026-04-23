@@ -3,11 +3,10 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import io
-import plotly.io as pio
-pio.kaleido.scope.default_format = "png"
+
 from modelcode import run_topsis, scenario0, scenario1, scenario2, scenario3, strategies
 
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 
@@ -94,10 +93,6 @@ ci, ranking = run_topsis(matrix, weights)
 ci_percent = ci * 100
 best_idx = ranking[0]
 best_strategy = strategies[best_idx]
-
-norm = matrix / np.sqrt((matrix**2).sum(axis=0))
-weighted = norm * weights
-contrib = weighted[best_idx]
 
 gap = ci[ranking[0]] - ci[ranking[1]]
 confidence_percent = round((gap / ci[ranking[0]]) * 100, 1)
@@ -193,18 +188,6 @@ comparison_df = pd.DataFrame(comparison_results)
 fig_compare = px.bar(comparison_df, x="Scenario", y="Score", color="Best Strategy")
 st.plotly_chart(fig_compare, use_container_width=True)
 
-# ================= SAFE IMAGE EXPORT =================
-def safe_img(fig):
-    try:
-        return fig.to_image(format="png")
-    except Exception as e:
-        st.error(f"Image export failed: {e}")
-        return None
-
-img_rank = safe_img(fig_rank)
-img_sens = safe_img(fig_sens)
-img_compare = safe_img(fig_compare)
-
 # ================= PDF =================
 def generate_pdf():
     buffer = io.BytesIO()
@@ -212,76 +195,65 @@ def generate_pdf():
     styles = getSampleStyleSheet()
     elements = []
 
-    # ===== TITLE =====
     elements.append(Paragraph("Supply Chain Decision Report", styles["Title"]))
     elements.append(Spacer(1, 12))
 
-    # ===== SCENARIO =====
     elements.append(Paragraph("Scenario", styles["Heading2"]))
     elements.append(Paragraph(scenario_descriptions[scenario_choice], styles["Normal"]))
     elements.append(Spacer(1, 12))
 
-    # ===== BEST STRATEGY =====
     elements.append(Paragraph(f"Best Strategy: {best_strategy}", styles["Normal"]))
     elements.append(Spacer(1, 12))
 
-    # ===== RANKING TABLE =====
+    # Ranking Table
     elements.append(Paragraph("Strategy Ranking", styles["Heading2"]))
-    
     ranking_table_data = [["Strategy", "Score (%)"]] + [
         [strategies[i], f"{round(ci_percent[i],1)}"]
         for i in ranking
     ]
 
-    ranking_table = Table(ranking_table_data)
-    ranking_table.setStyle(TableStyle([
+    table = Table(ranking_table_data)
+    table.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,0), colors.grey),
         ("TEXTCOLOR",(0,0),(-1,0),colors.white),
         ("ALIGN",(0,0),(-1,-1),"CENTER"),
         ("GRID", (0,0), (-1,-1), 1, colors.black)
     ]))
 
-    elements.append(ranking_table)
+    elements.append(table)
     elements.append(Spacer(1, 12))
 
-    # ===== SCENARIO COMPARISON TABLE =====
+    # Scenario Comparison Table
     elements.append(Paragraph("Scenario Comparison", styles["Heading2"]))
+    comp_data = [["Scenario", "Best Strategy", "Score (%)"]]
 
-    comparison_table_data = [["Scenario", "Best Strategy", "Score (%)"]]
-    for name, mat in zip(
-        ["Stable", "Supplier", "Demand", "Multi-Risk"],
-        [scenario0, scenario1, scenario2, scenario3]
-    ):
+    for name, mat in zip(scenario_names, scenario_matrices):
         ci_temp, rank_temp = run_topsis(mat, weights)
-        comparison_table_data.append([
+        comp_data.append([
             name,
             strategies[rank_temp[0]],
             f"{round(ci_temp[rank_temp[0]] * 100,1)}"
         ])
 
-    comparison_table = Table(comparison_table_data)
-    comparison_table.setStyle(TableStyle([
+    comp_table = Table(comp_data)
+    comp_table.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,0), colors.grey),
         ("TEXTCOLOR",(0,0),(-1,0),colors.white),
         ("ALIGN",(0,0),(-1,-1),"CENTER"),
         ("GRID", (0,0), (-1,-1), 1, colors.black)
     ]))
 
-    elements.append(comparison_table)
+    elements.append(comp_table)
     elements.append(Spacer(1, 12))
 
-    # ===== NOTE =====
     elements.append(Paragraph(
-        "Note: Interactive visualizations (ranking, sensitivity analysis, and scenario comparison) "
-        "are available in the Streamlit dashboard.",
+        "Interactive charts are available in the Streamlit dashboard.",
         styles["Italic"]
     ))
 
-    # ===== BUILD PDF =====
     doc.build(elements)
     buffer.seek(0)
     return buffer
-
 
 # ================= DOWNLOAD =================
 st.markdown("---")
