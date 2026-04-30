@@ -36,7 +36,7 @@ scenario3 = np.array([
     [1,5,5,5,4,1,1]
 ])
 
-weights = np.array([0.04, 0.29, 0.22, 0.12, 0.22, 0.02, 0.08])
+weights = np.array([0.04, 0.38, 0.20, 0.10, 0.21, 0.02, 0.06])
 
 def topsis(matrix, weights):
     # Normalize matrix
@@ -71,3 +71,25 @@ def run_topsis(matrix, weights):
     ranking = np.argsort(-ci)
     return ci, ranking
 
+# ================= RUN TEST =================
+
+scenarios = {
+    "Scenario 0 (Stable)": scenario0,
+    "Scenario 1 (Supplier)": scenario1,
+    "Scenario 2 (Demand)": scenario2,
+    "Scenario 3 (Multi-risk)": scenario3
+}
+
+for name, matrix in scenarios.items():
+    print("\n" + "="*50)
+    print(name)
+
+    ci, ranking = run_topsis(matrix, weights)
+
+    print("\nCloseness Coefficients:")
+    for i, score in enumerate(ci):
+        print(f"{strategies[i]}: {round(score, 4)}")
+
+    print("\nRanking:")
+    for rank, idx in enumerate(ranking, 1):
+        print(f"{rank}. {strategies[idx]} ({round(ci[idx],4)})")
