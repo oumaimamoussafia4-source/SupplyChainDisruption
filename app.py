@@ -66,7 +66,7 @@ with col1:
 
 # ================= RIGHT PANEL =================
 with col2:
-    default_weights = np.array([0.04, 0.29, 0.22, 0.12, 0.22, 0.02, 0.08])
+    default_weights = np.array([0.04, 0.38, 0.20, 0.10, 0.21, 0.02, 0.06])
 
     st.write("### 🎯 Define priorities")
     st.caption("0 = not important | 1 = very important")
