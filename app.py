@@ -255,12 +255,17 @@ def generate_pdf():
     return buffer
 
 # ================= DOWNLOAD =================
-if st.button("📄 Generate Report"):
-    pdf = generate_pdf()
+st.markdown("---")
 
+# Step 1: Generate and store PDF
+if st.button("📄 Generate Report"):
+    st.session_state.pdf_data = generate_pdf()
+
+# Step 2: Show download button ONLY if PDF exists
+if "pdf_data" in st.session_state:
     st.download_button(
         "📥 Download PDF",
-        data=pdf,
+        data=st.session_state.pdf_data,
         file_name="decision_report.pdf",
         mime="application/pdf"
     )
