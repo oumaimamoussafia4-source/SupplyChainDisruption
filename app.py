@@ -204,58 +204,60 @@ def generate_pdf():
     elements.append(Paragraph(f"Best Strategy: {best_strategy}", styles["Normal"]))
     elements.append(Spacer(1, 12))
 
-    # Ranking table
+    # ================= RANKING =================
     elements.append(Paragraph("Strategy Ranking", styles["Heading2"]))
     ranking_table_data = [["Strategy", "Score (%)"]] + [
-    [strategies[i], f"{round(ci_percent[i],1)}"]
-    for i in ranking
+        [strategies[i], f"{round(ci_percent[i],1)}"]
+        for i in ranking
     ]
-    
+
     table = Table(ranking_table_data)
     table.setStyle(TableStyle([
-         ("BACKGROUND", (0,0), (-1,0), colors.grey),
-         ("TEXTCOLOR", (0,0),(-1,0), colors.white),
-          ("ALIGN", (0,0),(-1,-1),"CENTER"),
-          ("GRID", (0,0), (-1,-1), 1, colors.black)
+        ("BACKGROUND", (0,0), (-1,0), colors.grey),
+        ("TEXTCOLOR", (0,0),(-1,0), colors.white),
+        ("ALIGN", (0,0),(-1,-1),"CENTER"),
+        ("GRID", (0,0), (-1,-1), 1, colors.black)
     ]))
 
     elements.append(table)
     elements.append(Spacer(1,12))
-    #Scenario Comparison Table
+
+    # ================= SCENARIO COMPARISON =================
     elements.append(Paragraph("Scenario Comparison", styles["Heading2"]))
     comp_data = [["Scenario", "Best Strategy", "Score (%)"]]
 
     for name, mat in zip(scenario_names, scenario_matrices):
-     ci_temp, rank_temp = run_topsis(mat, weights)
-     comp_data.append ([
-      name, 
-      strategies[rank_temp[0]],
-      f"{round(ci_temp[rank_temp[0]] * 100,1)}"
-     ])
+        ci_temp, rank_temp = run_topsis(mat, weights)
+        comp_data.append([
+            name,
+            strategies[rank_temp[0]],
+            f"{round(ci_temp[rank_temp[0]] * 100,1)}"
+        ])
+
     comp_table = Table(comp_data)
     comp_table.setStyle(TableStyle([
-         ("BACKGROUND", (0,0), (-1,0), colors.grey),
-         ("TEXTCOLOR", (0,0),(-1,0), colors.white),
-          ("ALIGN", (0,0),(-1,-1),"CENTER"),
-          ("GRID", (0,0), (-1,-1), 1, colors.black)
+        ("BACKGROUND", (0,0), (-1,0), colors.grey),
+        ("TEXTCOLOR", (0,0),(-1,0), colors.white),
+        ("ALIGN", (0,0),(-1,-1),"CENTER"),
+        ("GRID", (0,0), (-1,-1), 1, colors.black)
     ]))
+
     elements.append(comp_table)
     elements.append(Spacer(1,12))
 
     elements.append(Paragraph(
-          "Interactive charts are available in the Streamlit dashboard.",
-           styles["Italic"]
+        "Interactive charts are available in the Streamlit dashboard.",
+        styles["Italic"]
     ))
+
     doc.build(elements)
     buffer.seek(0)
     return buffer
 
 # ================= DOWNLOAD =================
-st.markdown("---")
 if st.button("📄 Generate Report"):
     pdf = generate_pdf()
 
-    st.session_state.pdf_data = pdf
     st.download_button(
         "📥 Download PDF",
         data=pdf,
