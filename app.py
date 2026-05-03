@@ -257,15 +257,13 @@ def generate_pdf():
 # ================= DOWNLOAD =================
 st.markdown("---")
 
-# Step 1: Generate and store PDF
 if st.button("📄 Generate Report"):
     st.session_state.pdf_data = generate_pdf()
 
-# Step 2: Show download button ONLY if PDF exists
 if "pdf_data" in st.session_state:
     st.download_button(
         "📥 Download PDF",
-        data=st.session_state.pdf_data,
+        data=st.session_state.pdf_data.getvalue(),  # 🔥 KEY FIX
         file_name="decision_report.pdf",
         mime="application/pdf"
     )
