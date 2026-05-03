@@ -206,9 +206,10 @@ def generate_pdf():
 
     # Ranking table
     elements.append(Paragraph("Strategy Ranking", styles["Heading2"]))
-    ranking_table_data - [["Strategy", "Score (%)"]]+ [[strategies[i], f"{round(ci_percent[i],1)}"]
+    ranking_table_data = [["Strategy", "Score (%)"]] + [
+    [strategies[i], f"{round(ci_percent[i],1)}"]
     for i in ranking
-     ]
+    ]
     
     table = Table(ranking_table_data)
     table.setStyle(TableStyle([
@@ -226,10 +227,10 @@ def generate_pdf():
 
     for name, mat in zip(scenario_names, scenario_matrices):
      ci_temp, rank_temp = run_topsis(mat, weights)
-     comp_dataappend ([
+     comp_data.append ([
       name, 
       strategies[rank_temp[0]],
-      f"{round(citemp[rank_temp[0]] * 100,1)}"
+      f"{round(ci_temp[rank_temp[0]] * 100,1)}"
      ])
     comp_table = Table(comp_data)
     comp_table.setStyle(TableStyle([
@@ -254,7 +255,7 @@ st.markdown("---")
 if st.button("📄 Generate Report"):
     pdf = generate_pdf()
 
-    st.session_state.pdf_data = generate_pdf()
+    st.session_state.pdf_data = pdf
     st.download_button(
         "📥 Download PDF",
         data=pdf,
