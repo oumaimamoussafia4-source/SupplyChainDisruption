@@ -251,17 +251,13 @@ def generate_pdf():
 
 # ================= DOWNLOAD =================
 st.markdown("---")
-
-if "pdf_data" not in st.session_state:
-    st.session_state.pdf_data = None
-
 if st.button("📄 Generate Report"):
-    st.session_state.pdf_data = generate_pdf()
+    pdf = generate_pdf()
 
-if st.session_state.pdf_data is not None:
+    st.session_state.pdf_data = generate_pdf()
     st.download_button(
         "📥 Download PDF",
-        data=st.session_state.pdf_data.getvalue(),
+        data=pdf,
         file_name="decision_report.pdf",
         mime="application/pdf"
     )
