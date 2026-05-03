@@ -267,7 +267,7 @@ if st.button("📄 Generate Report"):
 if st.session_state.pdf_data is not None:
     st.download_button(
         "📥 Download PDF",
-        data=st.session_state.pdf_data,
+        data=st.session_state.pdf_data.getvalue(),
         file_name="decision_report.pdf",
         mime="application/pdf"
     )
